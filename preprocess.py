@@ -37,7 +37,7 @@ for directory_name in directory_names:
         "target_text": target_text,
         "source_language": LANGUAGE_DICT[source_language],
         "target_language": LANGUAGE_DICT[target_language]
-    }).head(5000)
+    }).head(10000)
 
     data = pd.concat([data, language_data])
 
