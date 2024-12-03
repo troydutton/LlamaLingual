@@ -37,13 +37,13 @@ for directory_name in directory_names:
         "target_text": target_text,
         "source_language": LANGUAGE_DICT[source_language],
         "target_language": LANGUAGE_DICT[target_language]
-    }).head(10000)
+    }).head(20000)
 
     data = pd.concat([data, language_data])
 
 print("Generating splits")
 
-train_data, test_data = train_test_split(data, test_size=0.2, random_state=42)
+train_data, test_data = train_test_split(data, test_size=0.1, random_state=42)
 train_data: pd.DataFrame = train_data.reset_index(drop=True)
 test_data: pd.DataFrame = test_data.reset_index(drop=True)
 
