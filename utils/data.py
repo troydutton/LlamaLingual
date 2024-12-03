@@ -1,6 +1,7 @@
 from typing import Tuple
 
 import pandas as pd
+import torch
 from torch import Tensor
 from torch.utils.data import Dataset
 from transformers import AutoTokenizer
@@ -39,17 +40,33 @@ class TranslationDataset(Dataset):
         source_tokens = self.tokenizer(
             source_chat,
             max_length=self.max_length,
-            padding="max_length",
             truncation=True,
-            return_tensors="pt"
         )
 
         target_tokens = self.tokenizer(
             target_chat,
             max_length=self.max_length,
-            padding="max_length",
             truncation=True,
-            return_tensors="pt"
         )
 
-        return {"input_ids": source_tokens["input_ids"].squeeze(), "attention_mask": source_tokens["attention_mask"].squeeze(), "labels": target_tokens["input_ids"].squeeze()}
+        return {"input_ids": source_tokens["input_ids"], "labels": target_tokens["input_ids"]}
+
+
+
+def collate(batch, tokenizer: AutoTokenizer) -> dict[str, Tensor]:
+    max_length = max([max(len(element["input_ids"]), len(element["labels"])) for element in batch])
+
+    input_ids, attention_masks, labels = [], [], []
+
+    for element in batch:
+        input_ids.append(element["input_ids"] + [tokenizer.pad_token_id] * (max_length - len(element["input_ids"])))
+        attention_masks.append([1] * len(element["input_ids"]) + [0] * (max_length - len(element["input_ids"])))
+        labels.append(element["labels"] + [-100] * (max_length - len(element["labels"])))
+
+    batch = {
+        "input_ids": torch.tensor(input_ids),
+        "labels": torch.tensor(labels),
+        "attention_mask": torch.tensor(attention_masks)
+    }
+
+    return batch
