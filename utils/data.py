@@ -7,48 +7,49 @@ from transformers import AutoTokenizer
 
 
 class TranslationDataset(Dataset):
-    def __init__(self, data: pd.DataFrame):
+    def __init__(self, data: pd.DataFrame, tokenizer: AutoTokenizer, max_length: int = 512):
         self.data = data
+        self.tokenizer = tokenizer
+        self.max_length = max_length
 
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, idx):
-        source_tokens, target_tokens = self.data.iloc[idx][["source_tokens", "target_tokens"]]
+        sample = self.data.iloc[idx]
 
-        return {"input_ids": source_tokens, "labels": target_tokens}
+        return self.tokenize_sample(sample)
 
-def tokenize_sample(tokenizer: AutoTokenizer, sample: pd.Series, max_length: int = 512) -> Tuple[Tensor, Tensor]:
-    """
-    Tokenizes the source and target text the tokens.
-    """
+    def tokenize_sample(self, sample: pd.Series) -> dict:
+        source_chat = [
+            {"role": "system", "content": f"Translate the following text from {sample['source_language']} to {sample['target_language']}:\n"},
+            {"role": "user", "content": sample["source_text"]}
+        ]
 
-    # Tokenize the source text
-    source_chat = [
-        {"role": "system", "content": f"Translate the following text from {sample['source_language']} to {sample['target_language']}:\n"},
-        {"role": "user", "content": sample["source_text"]}
-    ]
+        target_chat = [
+            {"role": "system", "content": f"Translate the following text from {sample['source_language']} to {sample['target_language']}:\n"},
+            {"role": "user", "content": sample["source_text"]},
+            {"role": "assistant", "content": sample["target_text"]}
+        ]
 
-    source_tokens = tokenizer.apply_chat_template(
-        source_chat,
-        padding="max_length",
-        max_length=max_length,
-        add_generation_prompt=True,
-        return_tensors="pt",
-    ).squeeze()
+        source_chat = self.tokenizer.apply_chat_template(source_chat, tokenize=False)
 
-    target_chat = [
-        {"role": "system", "content": f"Translate the following text from {sample['source_language']} to {sample['target_language']}:\n"},
-        {"role": "user", "content": sample["source_text"]},
-        {"role": "assistant", "content": sample["target_text"]}
-    ]
+        target_chat = self.tokenizer.apply_chat_template(target_chat, tokenize=False)
 
-    target_tokens = tokenizer.apply_chat_template(
-        target_chat,
-        padding="max_length",
-        max_length=max_length,
-        add_generation_prompt=True,
-        return_tensors="pt",
-    )
+        source_tokens = self.tokenizer(
+            source_chat,
+            max_length=self.max_length,
+            padding="max_length",
+            truncation=True,
+            return_tensors="pt"
+        )
 
-    return source_tokens, target_tokens
+        target_tokens = self.tokenizer(
+            target_chat,
+            max_length=self.max_length,
+            padding="max_length",
+            truncation=True,
+            return_tensors="pt"
+        )
+
+        return {"input_ids": source_tokens["input_ids"].squeeze(), "attention_mask": source_tokens["attention_mask"].squeeze(), "labels": target_tokens["input_ids"].squeeze()}
