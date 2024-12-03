@@ -30,6 +30,8 @@ def load_model(model_name: str = "meta-llama/Llama-2-7b-chat-hf") -> tuple[AutoM
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
         tokenizer.pad_token_id = tokenizer.eos_token_id
+        
+    tokenizer.padding_side = "right"
 
     return model, tokenizer
 
