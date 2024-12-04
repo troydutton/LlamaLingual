@@ -53,7 +53,7 @@ def main() -> None:
         logging_steps=1,
         eval_strategy="steps",
         eval_steps=20000,
-        save_steps=20000,
+        save_steps=10000,
         report_to="wandb"
     )
 

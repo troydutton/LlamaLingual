@@ -22,51 +22,38 @@ class TranslationDataset(Dataset):
         return self.tokenize_sample(sample)
 
     def tokenize_sample(self, sample: pd.Series) -> dict:
-        source_chat = [
-            {"role": "system", "content": f"Translate the following text from {sample['source_language']} to {sample['target_language']}:\n"},
-            {"role": "user", "content": sample["source_text"]}
-        ]
-
-        target_chat = [
+        chat = [
             {"role": "system", "content": f"Translate the following text from {sample['source_language']} to {sample['target_language']}:\n"},
             {"role": "user", "content": sample["source_text"]},
             {"role": "assistant", "content": sample["target_text"]}
-        ]
+        ] 
 
-        source_chat = self.tokenizer.apply_chat_template(source_chat, tokenize=False)
+        chat = self.tokenizer.apply_chat_template(chat, tokenize=False)
 
-        target_chat = self.tokenizer.apply_chat_template(target_chat, tokenize=False)
+        tokens = self.tokenizer(chat, max_length=self.max_length, truncation=True)
 
-        source_tokens = self.tokenizer(
-            source_chat,
-            max_length=self.max_length,
-            truncation=True,
-        )
-
-        target_tokens = self.tokenizer(
-            target_chat,
-            max_length=self.max_length,
-            truncation=True,
-        )
-
-        return {"input_ids": source_tokens["input_ids"], "labels": target_tokens["input_ids"]}
-
-
+        return {"input_ids": tokens["input_ids"]}
 
 def collate(batch, tokenizer: AutoTokenizer) -> dict[str, Tensor]:
-    max_length = max([max(len(element["input_ids"]), len(element["labels"])) for element in batch])
+    max_length = max([len(element["input_ids"]) for element in batch])
 
-    input_ids, attention_masks, labels = [], [], []
+    batch_input_ids, batch_attention_masks, batch_labels = [], [], []
 
     for element in batch:
-        input_ids.append(element["input_ids"] + [tokenizer.pad_token_id] * (max_length - len(element["input_ids"])))
-        attention_masks.append([1] * len(element["input_ids"]) + [0] * (max_length - len(element["input_ids"])))
-        labels.append(element["labels"] + [-100] * (max_length - len(element["labels"])))
+        pad_length = max_length - len(element["input_ids"])
+
+        input_ids = element["input_ids"] + [tokenizer.pad_token_id] * pad_length
+        attention_mask = [1] * len(element["input_ids"]) + [0] * pad_length
+        labels = element["input_ids"] + [-100] * pad_length
+
+        batch_input_ids.append(input_ids)
+        batch_attention_masks.append(attention_mask)
+        batch_labels.append(labels)
 
     batch = {
-        "input_ids": torch.tensor(input_ids),
-        "labels": torch.tensor(labels),
-        "attention_mask": torch.tensor(attention_masks)
+        "input_ids": torch.tensor(batch_input_ids),
+        "labels": torch.tensor(batch_labels),
+        "attention_mask": torch.tensor(batch_attention_masks)
     }
 
     return batch
