@@ -26,10 +26,11 @@ def load_model(model_name: str = "meta-llama/Llama-2-7b-chat-hf") -> tuple[AutoM
 
     tokenizer = AutoTokenizer.from_pretrained(model_name)
 
-    # Set the padding token to the eos token
+    # Set the padding token
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.unk_token
         tokenizer.pad_token_id = tokenizer.unk_token_id
+        model.config.pad_token = tokenizer.unk_token
         model.config.pad_token_id = tokenizer.unk_token_id
         
     tokenizer.padding_side = "right"
@@ -61,9 +62,13 @@ def load_lora_model(adapter_name: str, model_name: str = "meta-llama/Llama-2-7b-
     # Load the adapter
     model = PeftModel.from_pretrained(model, adapter_name)
 
-    # Set the padding token to the eos token
+    # Set the padding token
     if tokenizer.pad_token is None:
-        tokenizer.pad_token = tokenizer.eos_token
-        tokenizer.pad_token_id = tokenizer.eos_token_id
+        tokenizer.pad_token = tokenizer.unk_token
+        tokenizer.pad_token_id = tokenizer.unk_token_id
+        model.config.pad_token = tokenizer.unk_token
+        model.config.pad_token_id = tokenizer.unk_token_id
+        
+    tokenizer.padding_side = "right"
 
     return model, tokenizer
