@@ -24,3 +24,6 @@ dependencies:
   - accelerate
   - flash-attn
   - openai
+  - sacrebleu
+  - nltk
+  - rouge-score
