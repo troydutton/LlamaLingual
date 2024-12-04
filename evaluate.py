@@ -168,7 +168,7 @@ def translate_text(model, tokenizer, data):
     return data
 
 def main():
-    CHECKPOINT_PATH = "checkpoints/no-checkpoint"
+    CHECKPOINT_PATH = "checkpoints/checkpoint-40000"
     NUM_DATA_POINTS = 5000
     
     # Determine device
@@ -178,7 +178,7 @@ def main():
     test_data = pd.read_csv("data/processed/test.csv").head(NUM_DATA_POINTS)
 
     # Get model and tokenizer
-    model, tokenizer = load_model()
+    model, tokenizer = load_lora_model(CHECKPOINT_PATH)
     
     # Move model to appropriate device
     model = model.to(device)
