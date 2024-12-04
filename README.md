@@ -2,7 +2,9 @@
 
 LlamaLingual is a Llama 2 model fine-tuned to translate from the Romance Languages to English.
 
-The methodology and results can be found in the [report](resources/report.pdf).
+![Results](resources/results.png)
+
+The methodology and analysis of the results can be found in the [report](resources/report.pdf).
 
 ## Setup
 
