@@ -4,23 +4,23 @@ mkdir -p data/raw
 
 cd data/raw
 
-# # URLs to download
-# urls=(
-#   "https://object.pouta.csc.fi/OPUS-OpenSubtitles/v2018/moses/en-fr.txt.zip"
-#   "https://object.pouta.csc.fi/OPUS-OpenSubtitles/v2018/moses/en-es.txt.zip"
-#   "https://object.pouta.csc.fi/OPUS-OpenSubtitles/v2018/moses/en-it.txt.zip"
-#   "https://object.pouta.csc.fi/OPUS-OpenSubtitles/v2018/moses/en-pt.txt.zip"
-#   "https://object.pouta.csc.fi/OPUS-OpenSubtitles/v2018/moses/en-ro.txt.zip"
-# )
+# URLs to download
+urls=(
+  "https://object.pouta.csc.fi/OPUS-OpenSubtitles/v2018/moses/en-fr.txt.zip"
+  "https://object.pouta.csc.fi/OPUS-OpenSubtitles/v2018/moses/en-es.txt.zip"
+  "https://object.pouta.csc.fi/OPUS-OpenSubtitles/v2018/moses/en-it.txt.zip"
+  "https://object.pouta.csc.fi/OPUS-OpenSubtitles/v2018/moses/en-pt.txt.zip"
+  "https://object.pouta.csc.fi/OPUS-OpenSubtitles/v2018/moses/en-ro.txt.zip"
+)
 
-# # Download files in parallel
-# echo "Starting downloads, this may take a while..."
-# for url in "${urls[@]}"; do
-#   wget -q "$url" &
-# done
+# Download files in parallel
+echo "Starting downloads, this may take a while..."
+for url in "${urls[@]}"; do
+  wget -q "$url" &
+done
 
-# # Wait for all background downloads to complete
-# wait
+# Wait for all background downloads to complete
+wait
 
 echo "Downloads complete."
 
