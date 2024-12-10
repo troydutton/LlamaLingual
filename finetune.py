@@ -1,3 +1,11 @@
+import torchvision
+
+torchvision.disable_beta_transforms_warning()
+
+import logging
+
+logging.getLogger("bitsandbytes").setLevel(logging.CRITICAL)
+
 import os
 
 os.environ["WANDB_PROJECT"] = "LlamaLingual"
